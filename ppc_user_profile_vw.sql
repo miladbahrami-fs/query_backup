@@ -12,7 +12,7 @@ SELECT binary_user_id
      , country
   FROM ppc_model_post_view_conversion.ppc_lead_vw
  WHERE conversion_type = 'post_view' AND (utm_medium NOT LIKE '%ppc%' OR utm_medium IS NULL))
-
+,all_conversions AS (
 SELECT binary_user_id
      , source AS platform
      , campaign_name
@@ -27,4 +27,8 @@ SELECT binary_user_id
      , date_joined
      , country AS residence
      , 'post_view' AS conversion_type 
-  FROM post_view
+  FROM post_view)
+SELECT all_conversions.*
+     , up.lifetime_payment.deposit_usd 
+  FROM all_conversions
+  LEFT JOIN bi.user_profile up ON up.binary_user_id = all_conversions.binary_user_id
