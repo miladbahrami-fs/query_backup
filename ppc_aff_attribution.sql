@@ -22,7 +22,7 @@ WITH leads_click AS (
             , user_date.joined as date_joined
         FROM bi.user_profile
        WHERE acquisition.channel = 'ppc'
-         AND user_date.joined >= '2020-06-01'
+         AND user_date.joined >= '2021-01-01'
             )
      WHERE channel = 'ppc'
 )
@@ -61,8 +61,7 @@ WITH leads_click AS (
          , 1 AS value
       FROM leads_all
 )
-
-,bo_vr AS(
+, bo_vr AS(
     SELECT leads.* EXCEPT(date, fact, value)
          , CAST(creation_stamp AS DATE) AS date
          , 'bo_virtual' AS fact
@@ -71,15 +70,14 @@ WITH leads_click AS (
       JOIN  leads ON uli.binary_user_id = leads.binary_user_id
      WHERE uli.loginid LIKE 'VR%'
 )
-
-,bo_real AS(
+, bo_real AS(
     SELECT leads.* EXCEPT(date,fact,value)
          , CAST(creation_stamp AS DATE) AS date, 'bo_real' AS fact, 1 AS value
       FROM `business-intelligence-240201.bi.user_loginid` AS uli
       JOIN  leads ON uli.binary_user_id = leads.binary_user_id
      WHERE uli.loginid NOT LIKE 'VR%' AND uli.loginid NOT LIKE 'MT%')
 
-,mt5_virtual AS (
+, mt5_virtual AS (
     SELECT leads.* EXCEPT(date,fact,value)
          , CAST(creation_stamp AS DATE) AS date
          , 'mt5_demo' AS fact
@@ -88,8 +86,7 @@ WITH leads_click AS (
       JOIN leads ON uli.binary_user_id = leads.binary_user_id
       WHERE uli.loginid LIKE 'MTD%'
 )
-
-,mt5_real AS (
+, mt5_real AS (
     SELECT leads.* EXCEPT(date,fact,value)
          , cast(creation_stamp AS date) AS date
          , 'mt5_real' AS fact
@@ -98,7 +95,6 @@ WITH leads_click AS (
       JOIN leads ON uli.binary_user_id = leads.binary_user_id
      WHERE uli.loginid LIKE 'MTR%'
 )
-
 ,activated AS (
     SELECT leads.* EXCEPT(date,fact,value)
          , cast(first_deposit_time AS date) AS date
@@ -109,19 +105,20 @@ WITH leads_click AS (
       LEFT JOIN `business-intelligence-240201.bi.bo_client` AS c ON uli.loginid = c.loginid
       WHERE first_deposit_time IS NOT NULL
 )
-
 ,deposit AS (
     SELECT leads.* EXCEPT(date,fact,value)
          , cast(transaction_time AS date) AS date
          , 'client_deposit_usd' AS fact
          , round(sum(coalesce(amount_usd,0)),2) AS value
-      FROM `business-intelligence-240201.bi.user_loginid` AS uli
-      JOIN leads ON uli.binary_user_id = leads.binary_user_id
-      JOIN (SELECT *
+      FROM leads
+      JOIN (SELECT transaction_time
+                 , binary_user_id
+                 , amount_usd
               FROM `business-intelligence-240201.bi.bo_payment_model`
-             WHERE category IN ('Client Deposit','Payment Agent Deposit')
+             WHERE transaction_time >='2021-01-01'
+               AND category IN ('Client Deposit','Payment Agent Deposit')
           ) AS pm
-            ON uli.loginid = pm.client_loginid
+            ON leads.binary_user_id = pm.binary_user_id
      GROUP BY 1, 2, 3, 4, 5, 6, 7, 8,9
 )
 SELECT * FROM leads
