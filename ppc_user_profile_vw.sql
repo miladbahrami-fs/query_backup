@@ -18,7 +18,7 @@ SELECT binary_user_id
      , campaign_name
      , DATE(date_joined) AS date_joined
      , country AS residence
-     , 'post_click' AS conversion_type 
+     , 'post_click' AS conversion_type
   FROM post_click
  UNION ALL
 SELECT binary_user_id
@@ -26,9 +26,10 @@ SELECT binary_user_id
      , campaign_name
      , date_joined
      , country AS residence
-     , 'post_view' AS conversion_type 
+     , 'post_view' AS conversion_type
   FROM post_view)
 SELECT all_conversions.*
-     , up.lifetime_payment.deposit_usd 
+     , up.lifetime_payment.deposit_usd
+     , aff_status
   FROM all_conversions
   LEFT JOIN bi.user_profile up ON up.binary_user_id = all_conversions.binary_user_id
