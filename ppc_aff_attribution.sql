@@ -23,7 +23,7 @@ WITH leads_click AS (
             , user_date.joined as date_joined
         FROM bi.user_profile
        WHERE acquisition.channel = 'ppc'
-         AND user_date.joined >= '2021-01-01'
+     --     AND user_date.joined >= '2018-01-01'
             )
      WHERE channel = 'ppc'
 )
